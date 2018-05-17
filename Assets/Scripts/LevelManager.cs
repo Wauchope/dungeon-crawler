@@ -20,7 +20,7 @@ public class LevelManager : Singleton<LevelManager>
     private GameObject newTile;
 
     //[SerializeField]
-    private int numberOfRooms = 100;
+    private int numberOfRooms = 40;
 
     //Must be a multiple of 2
     [SerializeField]

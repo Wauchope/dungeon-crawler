@@ -33,26 +33,19 @@ public class Room : MonoBehaviour
         levelWidth = LevelManager.Instance.LevelWidth;
         levelHeight = LevelManager.Instance.LevelHeight;
 
-        MoveRoom(width, height, levelWidth, levelHeight, this);
+        MoveRoom(width, height, levelWidth, levelHeight);
     }
 
-    private void MoveRoom(int roomWidth, int roomHeight, int levelWidth, int levelHeight, Room room)
+    private void MoveRoom(int roomWidth, int roomHeight, int levelWidth, int levelHeight)
     {
-        Debug.Log(CheckRoomOverlap(roomWidth, roomHeight, room));
-        if (CheckRoomOverlap(roomWidth, roomHeight, room))
+        Debug.Log(CheckRoomOverlap(roomWidth, roomHeight, this));
+        while (CheckRoomOverlap(roomWidth, roomHeight, this))
         {
-            room.transform.position = new Vector3(Random.Range(0, levelWidth), Random.Range(0, levelHeight));
+            transform.position = new Vector3(Random.Range(0, levelWidth), Random.Range(0, levelHeight));
+        }
 
-            if (CheckRoomOverlap(roomWidth, roomHeight, room))
-            {
-                Destroy(room);
-            }
-        }
-        else
-        {
-            GridPosition = new Point((int)transform.position.x + (int)System.Math.Round((double)(roomWidth / 2), 0), (int)transform.position.y + (int)System.Math.Round((double)(roomHeight / 2), 0));
-            LevelManager.Instance.Rooms.Add(room.GridPosition, room);
-        }
+        GridPosition = new Point((int)transform.position.x + (int)System.Math.Round((double)(roomWidth / 2), 0), (int)transform.position.y + (int)System.Math.Round((double)(roomHeight / 2), 0));
+        LevelManager.Instance.Rooms.Add(GridPosition, this);
     }
 
     private bool CheckRoomOverlap(int roomWidth, int roomHeight, Room room)
@@ -99,7 +92,7 @@ public class Room : MonoBehaviour
 
         if (roomHeight % 2 == 0)
         {
-            collider.offset = new Vector2(collider.offset.x, (roomHeight / 2) - 0.5f);
+            collider.offset = new Vector2(collider.offset.x, (roomHeight/ 2) - 0.5f);
         }
         else
         {
