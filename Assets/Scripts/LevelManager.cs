@@ -20,10 +20,7 @@ public class LevelManager : Singleton<LevelManager>
     private GameObject newTile;
 
     //[SerializeField]
-    private int numberOfRooms = 200;
-
-    [SerializeField]
-    private int padding;
+    private int numberOfRooms = 100;
 
     //Must be a multiple of 2
     [SerializeField]
@@ -58,12 +55,12 @@ public class LevelManager : Singleton<LevelManager>
     {
         if (!levelGenerated)
         {
-            GenerateLevel(numberOfRooms, LevelWidth, LevelHeight, padding);
+            GenerateLevel(numberOfRooms, LevelWidth, LevelHeight);
             levelGenerated = true;
         }
     }
 
-    private void GenerateLevel(int maxRooms, int levelWidth, int levelHeight, int spacing)
+    private void GenerateLevel(int maxRooms, int levelWidth, int levelHeight)
     {
         for (int x = -1; x < levelWidth+1; x++)
         {
@@ -82,11 +79,11 @@ public class LevelManager : Singleton<LevelManager>
             int roomWidth = Random.Range(5, 15) + 2;
             int roomHeight = Random.Range(5, 15) + 2;
 
-            GenerateRoom(roomWidth, roomHeight, room, spacing);
+            GenerateRoom(roomWidth, roomHeight, room);
         }
     }
 
-    private void GenerateRoom(int desiredWidth, int desiredHeight, int roomNumber, int spacing)
+    private void GenerateRoom(int desiredWidth, int desiredHeight, int roomNumber)
     {
         Room room = Instantiate(roomObject, map).GetComponent<Room>();
         room.name = "Room_" + roomNumber;

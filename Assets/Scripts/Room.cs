@@ -9,8 +9,12 @@ public class Room : MonoBehaviour
     private int width;
     private int height;
 
+    [SerializeField]
+    private int padding;
+
     private int levelWidth;
     private int levelHeight;
+
     void Start ()
     {
 
@@ -34,25 +38,21 @@ public class Room : MonoBehaviour
 
     private void MoveRoom(int roomWidth, int roomHeight, int levelWidth, int levelHeight, Room room)
     {
-        int x = 0;
-        int y = 0;
-
-        while (CheckRoomOverlap(roomWidth, roomHeight, room))
+        Debug.Log(CheckRoomOverlap(roomWidth, roomHeight, room));
+        if (CheckRoomOverlap(roomWidth, roomHeight, room))
         {
-            room.transform.position = new Vector3(Random.Range(0, x), Random.Range(0, y));
-            x++;
-            y++;
+            room.transform.position = new Vector3(Random.Range(0, levelWidth), Random.Range(0, levelHeight));
 
-            if (y > levelHeight || x > levelWidth)
+            if (CheckRoomOverlap(roomWidth, roomHeight, room))
             {
                 Destroy(room);
-                break;
             }
         }
-
-
-        GridPosition = new Point((int)transform.position.x, (int)transform.position.y);
-        LevelManager.Instance.Rooms.Add(room.GridPosition, room);
+        else
+        {
+            GridPosition = new Point((int)transform.position.x + (int)System.Math.Round((double)(roomWidth / 2), 0), (int)transform.position.y + (int)System.Math.Round((double)(roomHeight / 2), 0));
+            LevelManager.Instance.Rooms.Add(room.GridPosition, room);
+        }
     }
 
     private bool CheckRoomOverlap(int roomWidth, int roomHeight, Room room)
@@ -63,11 +63,10 @@ public class Room : MonoBehaviour
 
         foreach (Room item in LevelManager.Instance.Rooms.Values)
         {
+            Debug.Log(item != room);
             if (item != room)
             {
-
                 BoxCollider2D colliderToCheck = item.GetComponent<BoxCollider2D>();
-                Debug.Log(collider.bounds.Intersects(colliderToCheck.bounds));
                 if (colliderToCheck != null && collider.bounds.Intersects(colliderToCheck.bounds) && colliderToCheck != collider)
                 {
                     return true;
@@ -87,7 +86,7 @@ public class Room : MonoBehaviour
 
     private void SetupCollider(BoxCollider2D collider, int roomWidth, int roomHeight)
     {
-        collider.size = new Vector2(roomWidth, roomHeight);
+        collider.size = new Vector2(roomWidth + padding, roomHeight + padding);
 
         if (roomWidth % 2 == 0)
         {
