@@ -41,8 +41,6 @@ public class Room : MonoBehaviour
 
     private void MoveRoom(int roomWidth, int roomHeight, int levelWidth, int levelHeight)
     {
-        Debug.Log(CheckRoomOverlap(roomWidth, roomHeight, this));
-
         int attemptNo = 0;
 
         while (CheckRoomOverlap(roomWidth, roomHeight, this))
@@ -58,8 +56,17 @@ public class Room : MonoBehaviour
             }
         }
 
-        GridPosition = new Point((int)transform.position.x + (int)System.Math.Round((double)(roomWidth / 2), 0), (int)transform.position.y + (int)System.Math.Round((double)(roomHeight / 2), 0));
-        LevelManager.Instance.Rooms.Add(GridPosition, this);
+
+        //Unknown cause for ArgumentException 
+        try
+        {
+            GridPosition = new Point((int)transform.position.x + (int)System.Math.Round((double)(roomWidth / 2), 0), (int)transform.position.y + (int)System.Math.Round((double)(roomHeight / 2), 0));
+            LevelManager.Instance.Rooms.Add(GridPosition, this);
+        }
+        catch (System.ArgumentException e)
+        {
+            Destroy(gameObject);
+        }
     }
 
     private bool CheckRoomOverlap(int roomWidth, int roomHeight, Room room)
@@ -70,7 +77,6 @@ public class Room : MonoBehaviour
 
         foreach (Room item in LevelManager.Instance.Rooms.Values)
         {
-            Debug.Log(item != room);
             if (item != room)
             {
                 BoxCollider2D colliderToCheck = item.GetComponent<BoxCollider2D>();
