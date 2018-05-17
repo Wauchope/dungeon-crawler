@@ -15,6 +15,9 @@ public class Room : MonoBehaviour
     private int levelWidth;
     private int levelHeight;
 
+    [SerializeField]
+    private int maxAttempts;
+
     void Start ()
     {
 
@@ -39,9 +42,20 @@ public class Room : MonoBehaviour
     private void MoveRoom(int roomWidth, int roomHeight, int levelWidth, int levelHeight)
     {
         Debug.Log(CheckRoomOverlap(roomWidth, roomHeight, this));
+
+        int attemptNo = 0;
+
         while (CheckRoomOverlap(roomWidth, roomHeight, this))
         {
-            transform.position = new Vector3(Random.Range(0, levelWidth), Random.Range(0, levelHeight));
+            transform.position = new Vector3(Random.Range(0, i), Random.Range(0, i));
+
+            attemptNo++;
+
+            if (attemptNo >= maxAttempts)
+            {
+                Destroy(gameObject);
+                break;
+            }
         }
 
         GridPosition = new Point((int)transform.position.x + (int)System.Math.Round((double)(roomWidth / 2), 0), (int)transform.position.y + (int)System.Math.Round((double)(roomHeight / 2), 0));
