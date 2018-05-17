@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager : Singleton<GameManager>
 {
 	void Start ()
     {
-		
-	}
+
+    }
 	
 	void Update ()
     {

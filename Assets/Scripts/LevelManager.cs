@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LevelManager : MonoBehaviour
+public class LevelManager : Singleton<LevelManager>
 {
     [SerializeField]
     private GameObject[] tilePrefabs;
@@ -10,7 +10,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField]
     private GameObject roomObject;
 
-    private List<GameObject> rooms = new List<GameObject>();
+    public Dictionary<Point, Room> Rooms = new Dictionary<Point, Room>();
 
     [SerializeField]
     private Transform map;
@@ -22,39 +22,73 @@ public class LevelManager : MonoBehaviour
     //[SerializeField]
     private int numberOfRooms = 200;
 
-    private int levelWidth = 128;
-    private int levelHeight = 128;
+    [SerializeField]
+    private int padding;
 
-    private bool haltLevelGen = false;
+    //Must be a multiple of 2
+    [SerializeField]
+    private int levelHeight;
+
+    [SerializeField]
+    private int levelWidth;
+
+    public int LevelHeight
+    {
+        get
+        {
+            return levelHeight;
+        }
+    }
+
+    public int LevelWidth
+    {
+        get
+        {
+            return levelWidth;
+        }
+
+    }
 
     void Start ()
     {
+        NewLevel();
+    }
+
+    private void NewLevel()
+    {
         if (!levelGenerated)
         {
-            GenerateLevel(numberOfRooms, levelWidth, levelHeight);
+            GenerateLevel(numberOfRooms, LevelWidth, LevelHeight, padding);
             levelGenerated = true;
         }
     }
 
-    private void GenerateLevel(int maxRooms, int levelWidth, int levelHeight)
+    private void GenerateLevel(int maxRooms, int levelWidth, int levelHeight, int spacing)
     {
+        for (int x = -1; x < levelWidth+1; x++)
+        {
+            for (int y = -1; y < levelHeight+1; y++)
+            {
+                if (x == -1 || x == levelWidth || y == -1 || y == levelHeight)
+                {
+                    Instantiate(tilePrefabs[0], new Vector3(x, y, 0), Quaternion.identity, map.transform).name = "Map_Border";
+                }
+            }
+        }
+
         for (int room = 0; room < maxRooms; room++)
         {
             //Randomly decides on the size of the room (+2 to include walls)
             int roomWidth = Random.Range(5, 15) + 2;
             int roomHeight = Random.Range(5, 15) + 2;
 
-            if (!haltLevelGen)
-            {
-                GenerateRoom(roomWidth, roomHeight, room);
-                MoveRoom(roomWidth, roomHeight, levelWidth, levelHeight, rooms[room]);
-            }
+            GenerateRoom(roomWidth, roomHeight, room, spacing);
         }
     }
 
-    private void GenerateRoom(int desiredWidth, int desiredHeight, int roomNumber)
+    private void GenerateRoom(int desiredWidth, int desiredHeight, int roomNumber, int spacing)
     {
-        GameObject room = Instantiate(roomObject, map);
+        Room room = Instantiate(roomObject, map).GetComponent<Room>();
         room.name = "Room_" + roomNumber;
 
         for (int currentY = 0; currentY < desiredHeight; currentY++)
@@ -74,72 +108,7 @@ public class LevelManager : MonoBehaviour
             }
         }
 
-        rooms.Add(room);
-        Debug.Log("Generated room number: " + (roomNumber + 1) + ". Width: " + desiredWidth + ", Height: " + desiredHeight);
-    }
-
-    private bool CheckRoomOverlap(int roomWidth, int roomHeight, GameObject room)
-    {
-        BoxCollider2D collider = room.GetComponent<BoxCollider2D>();
-
-        SetupCollider(collider, roomWidth, roomHeight);
-
-        foreach (GameObject item in rooms)
-        {
-            if (item != room)
-            {
-                BoxCollider2D colliderToCheck = item.GetComponent<BoxCollider2D>();
-                if (colliderToCheck != null && collider.bounds.Intersects(colliderToCheck.bounds) && colliderToCheck != collider)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private void MoveRoom(int roomWidth, int roomHeight, int levelWidth, int levelHeight, GameObject room)
-    {
-        int x = 0;
-        int y = 0;
-
-        while (CheckRoomOverlap(roomWidth, roomHeight, room))
-        {
-            room.transform.position = new Vector3(Random.Range(-x, x), Random.Range(-y, y));
-            x++;
-            y++;
-
-            if(y > levelHeight / 2 || x > levelWidth / 2)
-            {
-                Debug.Log("Warning: Too many rooms for the current level size");
-                rooms.Remove(room);
-                Destroy(room);
-                haltLevelGen = true;
-            }
-        }
-    }
-
-    private void SetupCollider(BoxCollider2D collider, int roomWidth, int roomHeight)
-    {
-        collider.size = new Vector2(roomWidth, roomHeight);
-
-        if (roomWidth % 2 == 0)
-        {
-            collider.offset = new Vector2((roomWidth / 2) - 0.5f, collider.offset.y);
-        }
-        else
-        {
-            collider.offset = new Vector2(roomWidth / 2, collider.offset.y);
-        }
-
-        if (roomHeight % 2 == 0)
-        {
-            collider.offset = new Vector2(collider.offset.x, (roomHeight / 2) - 0.5f);
-        }
-        else
-        {
-            collider.offset = new Vector2(collider.offset.x, roomHeight / 2);
-        }
+        room.Setup(desiredWidth, desiredHeight);
     }
 
     private void RemoveLevel(Transform map)
@@ -149,8 +118,7 @@ public class LevelManager : MonoBehaviour
             Destroy(map.GetChild(0).gameObject);
         }
 
-        rooms = new List<GameObject>();
-        haltLevelGen = false;
+        Rooms = new Dictionary<Point, Room>();
     }
 
     void Update ()
