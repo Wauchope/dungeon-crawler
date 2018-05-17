@@ -47,7 +47,7 @@ public class Room : MonoBehaviour
 
         while (CheckRoomOverlap(roomWidth, roomHeight, this))
         {
-            transform.position = new Vector3(Random.Range(0, i), Random.Range(0, i));
+            transform.position = new Vector3(Random.Range(0, levelWidth), Random.Range(0, levelHeight));
 
             attemptNo++;
 
