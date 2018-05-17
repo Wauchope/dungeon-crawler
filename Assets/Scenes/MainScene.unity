@@ -298,6 +298,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1025682132}
   - component: {fileID: 1025682131}
+  - component: {fileID: 1025682134}
   - component: {fileID: 1025682133}
   m_Layer: 0
   m_Name: LevelManager
@@ -364,6 +365,18 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &1025682134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1025682130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acae9d50a5f93f41aea0d10f4252ef5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showDebug: 1
 --- !u!1 &1863673438
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,19 +5,21 @@ using UnityEngine;
 public class LevelManager : Singleton<LevelManager>
 {
     [SerializeField]
-    private GameObject[] tilePrefabs;
+    public GameObject[] tilePrefabs;
 
     [SerializeField]
     private GameObject roomObject;
 
+    private MazeGenerator mazeGen;
+
     public Dictionary<Point, Room> Rooms = new Dictionary<Point, Room>();
+
+    public Dictionary<Point, Tile> Tiles = new Dictionary<Point, Tile>();
 
     [SerializeField]
     private Transform map;
 
     private bool levelGenerated = false;
-
-    private GameObject newTile;
 
     [SerializeField]
     private int numberOfRooms;
@@ -48,6 +50,7 @@ public class LevelManager : Singleton<LevelManager>
 
     void Start ()
     {
+        mazeGen = GetComponent<MazeGenerator>();
         NewLevel();
     }
 
@@ -80,7 +83,7 @@ public class LevelManager : Singleton<LevelManager>
             int roomWidth = Random.Range(5, 15) + 2;
             int roomHeight = Random.Range(5, 15) + 2;
 
-            //GenerateRoom(roomWidth, roomHeight, room);
+            GenerateRoom(roomWidth, roomHeight, room);
         }
 
         GenerateMaze(LevelWidth, LevelHeight);
@@ -91,32 +94,48 @@ public class LevelManager : Singleton<LevelManager>
         Room room = Instantiate(roomObject, map).GetComponent<Room>();
         room.name = "Room_" + roomNumber;
 
+        //A list of walls which can be converted to doors
+        List<Tile> walls = new List<Tile>();
+
+        bool flagForDoor = false;
         bool isDoorPlaced = false;
 
-        //A list of walls which can be converted to doors
-        List<GameObject> walls = new List<GameObject>();
+        int tileType = 0;
 
         for (int currentY = 0; currentY < desiredHeight; currentY++)
         {
             for (int currentX = 0; currentX < desiredWidth; currentX++)
             {
+                flagForDoor = false;
+
                 if (currentX == 0 || currentX == desiredWidth - 1 || currentY == 0 || currentY == desiredHeight - 1)
                 {
-                    //Ensures the corner tiles are solid wall
-                    if (currentX == 0 && currentY == 0 || currentY == 0 && currentX == desiredWidth - 1 || currentY == desiredHeight - 1 && currentX == 0 || currentX == desiredWidth - 1 && currentY == desiredHeight - 1)
+                    //Place walls
+                    tileType = 0;
+
+                    if (!(currentX == 0 && currentY == 0 ||
+                        currentY == 0 && currentX == desiredWidth - 1 ||
+                        currentY == desiredHeight - 1 && currentX == 0 ||
+                        currentX == desiredWidth - 1 && currentY == desiredHeight - 1))
                     {
-                        Instantiate(tilePrefabs[0], new Vector3(currentX, currentY, 0), Quaternion.identity, room.transform);
-                    }
-                    else
-                    {
-                        //Places the walls and adds it to the special list! (okay maybe not so special)
-                        walls.Add(Instantiate(tilePrefabs[0], new Vector3(currentX, currentY, 0), Quaternion.identity, room.transform));
+                        flagForDoor = true;
                     }
                 }
                 else
                 {
                     //Place all other objects here (TO ADD RANDOMNESS AND MORE TILES)
-                    Instantiate(tilePrefabs[1], new Vector3(currentX, currentY, 0), Quaternion.identity, room.transform);
+                    tileType = 1;
+                }
+
+                Tile newTile = Instantiate(tilePrefabs[tileType], new Vector3(currentX, currentY, 0), Quaternion.identity, room.transform).GetComponent<Tile>();
+                newTile.Setup(currentX, currentY, tileType);
+
+                Tiles.Add(newTile.GridPosition, newTile);
+
+                //Adds non-corner wall tiles to a list
+                if (flagForDoor == true)
+                {
+                    walls.Add(newTile);
                 }
             }
         }
@@ -126,10 +145,10 @@ public class LevelManager : Singleton<LevelManager>
             int tempX = 0;
             int tempY = 0;
 
-            foreach (GameObject wall in walls)
+            foreach (Tile wall in walls)
             {
-                tempX = (int) wall.transform.position.x;
-                tempY = (int) wall.transform.position.y;
+                tempX = wall.GridPosition.x;
+                tempY = wall.GridPosition.y;
 
                 if (Random.Range(0, 25) == 24)
                 {
@@ -145,7 +164,7 @@ public class LevelManager : Singleton<LevelManager>
 
     private void GenerateMaze(int width, int height)
     {
-
+        mazeGen.GenerateNewMaze(width, height);
     }
 
     private void RemoveLevel(Transform map)
