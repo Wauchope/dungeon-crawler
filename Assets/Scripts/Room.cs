@@ -37,6 +37,72 @@ public class Room : MonoBehaviour
         levelHeight = LevelManager.Instance.LevelHeight;
 
         MoveRoom(width, height, levelWidth, levelHeight);
+        CreateDoor(width, height);
+    }
+
+    private void CreateDoor(int width, int height)
+    {
+        //A list of walls which can be converted to doors
+        List<Tile> walls = new List<Tile>();
+
+        bool flagForDoor = false;
+        bool isDoorPlaced = false;
+
+        int xStart = (int) transform.position.x;
+        int yStart = (int)transform.position.y;
+
+
+        for (int currentY = yStart; currentY < yStart + height; currentY++)
+        {
+            for (int currentX = xStart; currentX < width; currentX++)
+            {
+                flagForDoor = false;
+
+                if (currentX == 0 || currentX == width - 1 || currentY == 0 || currentY == height - 1)
+                {
+                    if (!(currentX == 0 && currentY == 0 ||
+                        currentY == 0 && currentX == width - 1 ||
+                        currentY == height - 1 && currentX == 0 ||
+                        currentX == width - 1 && currentY == height - 1))
+                    {
+                        flagForDoor = true;
+                    }
+                }
+
+                //Adds non-corner wall tiles to a list
+                if (flagForDoor == true)
+                {
+                    walls.Add(LevelManager.Instance.Tiles[new Point(currentX, currentY)]);
+                }
+            }
+        }
+
+        while (!isDoorPlaced)
+        {
+            int tempX = 0;
+            int tempY = 0;
+
+            foreach (Tile wall in walls)
+            {
+                tempX = wall.GridPosition.x;
+                tempY = wall.GridPosition.y;
+                if (Random.Range(0, 25) == 24)
+                {
+                    //Destroy the old tile
+                    Tile tile = LevelManager.Instance.Tiles[wall.GridPosition];
+                    Destroy(tile);
+                    LevelManager.Instance.Tiles.Remove(wall.GridPosition);
+
+                    //Create the door
+                    tile = Instantiate(LevelManager.Instance.tilePrefabs[2], new Vector3(tempX, tempY, 0), Quaternion.identity, transform).GetComponent<Tile>();
+                    tile.name = "Door";
+                    tile.Setup(tempX, tempY);
+                    isDoorPlaced = true;
+                    break;
+                }
+            }
+        }
+
     }
 
     private void MoveRoom(int roomWidth, int roomHeight, int levelWidth, int levelHeight)
@@ -62,6 +128,13 @@ public class Room : MonoBehaviour
         {
             GridPosition = new Point((int)transform.position.x + (int)System.Math.Round((double)(roomWidth / 2), 0), (int)transform.position.y + (int)System.Math.Round((double)(roomHeight / 2), 0));
             LevelManager.Instance.Rooms.Add(GridPosition, this);
+
+            foreach (Transform child in transform)
+            {
+                Tile tile = child.GetComponent<Tile>();
+                tile.Setup((int) child.transform.position.x, (int) child.transform.position.y);
+                LevelManager.Instance.Tiles.Add(new Point((int)child.transform.position.x, (int)child.transform.position.y), tile);
+            }
         }
         catch (System.ArgumentException e)
         {

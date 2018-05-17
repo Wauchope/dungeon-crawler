@@ -92,13 +92,7 @@ public class LevelManager : Singleton<LevelManager>
     private void GenerateRoom(int desiredWidth, int desiredHeight, int roomNumber)
     {
         Room room = Instantiate(roomObject, map).GetComponent<Room>();
-        room.name = "Room_" + roomNumber;
-
-        //A list of walls which can be converted to doors
-        List<Tile> walls = new List<Tile>();
-
-        bool flagForDoor = false;
-        bool isDoorPlaced = false;
+        room.name = "Room_" + roomNumber;        
 
         int tileType = 0;
 
@@ -106,20 +100,11 @@ public class LevelManager : Singleton<LevelManager>
         {
             for (int currentX = 0; currentX < desiredWidth; currentX++)
             {
-                flagForDoor = false;
 
                 if (currentX == 0 || currentX == desiredWidth - 1 || currentY == 0 || currentY == desiredHeight - 1)
                 {
                     //Place walls
                     tileType = 0;
-
-                    if (!(currentX == 0 && currentY == 0 ||
-                        currentY == 0 && currentX == desiredWidth - 1 ||
-                        currentY == desiredHeight - 1 && currentX == 0 ||
-                        currentX == desiredWidth - 1 && currentY == desiredHeight - 1))
-                    {
-                        flagForDoor = true;
-                    }
                 }
                 else
                 {
@@ -127,35 +112,7 @@ public class LevelManager : Singleton<LevelManager>
                     tileType = 1;
                 }
 
-                Tile newTile = Instantiate(tilePrefabs[tileType], new Vector3(currentX, currentY, 0), Quaternion.identity, room.transform).GetComponent<Tile>();
-                newTile.Setup(currentX, currentY, tileType);
-
-                Tiles.Add(newTile.GridPosition, newTile);
-
-                //Adds non-corner wall tiles to a list
-                if (flagForDoor == true)
-                {
-                    walls.Add(newTile);
-                }
-            }
-        }
-
-        while (!isDoorPlaced)
-        {
-            int tempX = 0;
-            int tempY = 0;
-
-            foreach (Tile wall in walls)
-            {
-                tempX = wall.GridPosition.x;
-                tempY = wall.GridPosition.y;
-
-                if (Random.Range(0, 25) == 24)
-                {
-                    Instantiate(tilePrefabs[2], new Vector3(tempX, tempY, 0), Quaternion.identity, room.transform).name = "Door";
-                    isDoorPlaced = true;
-                    break;
-                }
+                GameObject newTile = Instantiate(tilePrefabs[tileType], new Vector3(currentX, currentY, 0), Quaternion.identity, room.transform);
             }
         }
 
