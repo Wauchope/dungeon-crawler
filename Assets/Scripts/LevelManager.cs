@@ -22,7 +22,7 @@ public class LevelManager : MonoBehaviour
     {
 		if (!levelGenerated)
         {
-            GenerateLevel(4);
+            GenerateLevel(10);
             levelGenerated = true;
         }
 	}
@@ -36,6 +36,7 @@ public class LevelManager : MonoBehaviour
             int roomHeight = Random.Range(5, 15) + 2;
 
             GenerateRoom(roomWidth, roomHeight, room);
+            rooms[room].transform.position = new Vector3(room*20, 0, 0);
             CheckRoomOverlap(roomWidth, roomHeight, room, rooms[room]);
         }
     }
@@ -67,34 +68,43 @@ public class LevelManager : MonoBehaviour
     private void CheckRoomOverlap(int roomWidth, int roomHeight, int roomNumber, GameObject room)
     {
         BoxCollider2D collider = room.GetComponent<BoxCollider2D>();
+
+        SetupCollider(collider, roomWidth, roomHeight);
+
+        foreach (GameObject item in rooms)
+        {
+            if (item != room)
+            {
+                BoxCollider2D colliderToCheck = item.GetComponent<BoxCollider2D>();
+                Debug.Log(collider.IsTouching(colliderToCheck));
+                if (colliderToCheck != null && collider.IsTouching(colliderToCheck) && colliderToCheck != collider)
+                {
+                    Debug.Log("Room_" + roomNumber + " must be moved");
+                }
+            }
+        }
+    }
+
+    private void SetupCollider(BoxCollider2D collider, int roomWidth, int roomHeight)
+    {
         collider.size = new Vector2(roomWidth, roomHeight);
 
-        if (roomWidth % 2 == 1)
+        if (roomWidth % 2 == 0)
         {
-            collider.offset = new Vector2((roomWidth + 1) / 2, collider.offset.y);
+            collider.offset = new Vector2((roomWidth / 2) - 0.5f, collider.offset.y);
         }
         else
         {
             collider.offset = new Vector2(roomWidth / 2, collider.offset.y);
         }
 
-        if (roomHeight % 2 == 1)
+        if (roomHeight % 2 == 0)
         {
-            collider.offset = new Vector2(collider.offset.x, (roomHeight + 1) / 2);
+            collider.offset = new Vector2(collider.offset.x, (roomHeight / 2) - 0.5f);
         }
         else
         {
             collider.offset = new Vector2(collider.offset.x, roomHeight / 2);
-        }
-
-        foreach (GameObject item in rooms)
-        {
-            BoxCollider2D colliderToCheck = item.GetComponent<BoxCollider2D>();
-            Debug.Log(collider.IsTouching(colliderToCheck));
-            if (colliderToCheck != null && collider.IsTouching(colliderToCheck) && colliderToCheck != collider)
-            {
-                Debug.Log("Room_" + roomNumber + " must be moved");
-            }
         }
     }
 
