@@ -90,12 +90,17 @@ public class Room : MonoBehaviour
 
         while (CheckRoomOverlap(roomWidth, roomHeight, this))
         {
-            transform.position = new Vector3(Random.Range(0, levelWidth), Random.Range(0, levelHeight));
+            transform.position = new Vector3(Random.Range(1, levelWidth), Random.Range(1, levelHeight));
 
             attemptNo++;
 
             if (attemptNo >= maxAttempts)
             {
+                foreach (Transform child in transform)
+                {
+                    Tile tile = child.GetComponent<Tile>();
+                    LevelManager.Instance.Tiles.Remove(tile.GridPosition);
+                }
                 Destroy(gameObject);
                 break;
             }
@@ -112,11 +117,16 @@ public class Room : MonoBehaviour
             {
                 Tile tile = child.GetComponent<Tile>();
                 tile.Setup((int) child.transform.position.x, (int) child.transform.position.y);
-                LevelManager.Instance.Tiles.Add(new Point((int)child.transform.position.x, (int)child.transform.position.y), tile);
+                LevelManager.Instance.Tiles.Add(tile.GridPosition, tile);
             }
         }
         catch (System.ArgumentException e)
         {
+            foreach (Transform child in transform)
+            {
+                Tile tile = child.GetComponent<Tile>();
+                LevelManager.Instance.Tiles.Remove(tile.GridPosition);
+            }
             Destroy(gameObject);
         }
     }

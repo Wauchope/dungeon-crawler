@@ -376,7 +376,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1acae9d50a5f93f41aea0d10f4252ef5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showDebug: 1
+  maze: {fileID: 1863673439}
 --- !u!1 &1863673438
 GameObject:
   m_ObjectHideFlags: 0
@@ -386,7 +386,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1863673439}
   m_Layer: 0
-  m_Name: Border
+  m_Name: Maze
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

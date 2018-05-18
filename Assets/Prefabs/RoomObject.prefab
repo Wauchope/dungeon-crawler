@@ -77,5 +77,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63e5ecb85627b704c9b15f6557862780, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  padding: 4
+  padding: 0
   maxAttempts: 5

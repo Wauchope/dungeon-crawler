@@ -8,6 +8,9 @@ public class MazeGenerator : MonoBehaviour
 
     private MazeDataGenerator dataGenerator;
 
+    [SerializeField]
+    private Transform maze;
+
     private GameObject[] tilePrefabs;
 
     public int[,] Data
@@ -31,13 +34,29 @@ public class MazeGenerator : MonoBehaviour
     public void GenerateNewMaze(int width, int height)
     {
         Data = dataGenerator.FromDimensions(width, height);
-
+        int data = 0;
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                //Check if tile exists
-                //Instantiate the game object
+                try
+                {
+                    Tile testTile = LevelManager.Instance.Tiles[new Point(x, y)];
+                }
+                catch (KeyNotFoundException e)
+                {
+                    if(Data[x, y] == 1)
+                    {
+                        data = 0;
+                    }
+                    else
+                    {
+                        data = 1;
+                    }
+                    Tile newTile = Instantiate(tilePrefabs[data], new Vector3(x, y, 0), Quaternion.identity, maze.transform).GetComponent<Tile>();
+                    newTile.name = LevelManager.Instance.tileTypes[data];
+                    newTile.Setup(x, y);
+                }
             }
         }
     }

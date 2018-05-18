@@ -75,18 +75,6 @@ public class LevelManager : Singleton<LevelManager>
 
     private void GenerateLevel(int maxRooms, int levelWidth, int levelHeight)
     {
-        /*//Creates the map borders
-        for (int x = -1; x < levelWidth+1; x++)
-        {
-            for (int y = -1; y < levelHeight+1; y++)
-            {
-                if (x == -1 || x == levelWidth || y == -1 || y == levelHeight)
-                {
-                    Instantiate(tilePrefabs[0], new Vector3(x, y, 0), Quaternion.identity, map.Find("Border").transform).name = "Map_Border";
-                }
-            }
-        }*/
-
         for (int room = 0; room < maxRooms; room++)
         {
             //Randomly decides on the size of the room (+2 to include walls)
@@ -96,7 +84,7 @@ public class LevelManager : Singleton<LevelManager>
             GenerateRoom(roomWidth, roomHeight, room);
         }
 
-        GenerateMaze(LevelWidth, LevelHeight);
+        GenerateMaze(LevelWidth + 2, LevelHeight + 2);
     }
 
     private void GenerateRoom(int desiredWidth, int desiredHeight, int roomNumber)
@@ -106,12 +94,12 @@ public class LevelManager : Singleton<LevelManager>
 
         int tileType = 0;
 
-        for (int currentY = 0; currentY < desiredHeight; currentY++)
+        for (int currentY = 1; currentY < desiredHeight+1; currentY++)
         {
-            for (int currentX = 0; currentX < desiredWidth; currentX++)
+            for (int currentX = 1; currentX < desiredWidth+1; currentX++)
             {
 
-                if (currentX == 0 || currentX == desiredWidth - 1 || currentY == 0 || currentY == desiredHeight - 1)
+                if (currentX == 1 || currentX == desiredWidth || currentY == 1 || currentY == desiredHeight)
                 {
                     //Place walls
                     tileType = 0;
