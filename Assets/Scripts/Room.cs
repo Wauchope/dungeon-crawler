@@ -45,64 +45,43 @@ public class Room : MonoBehaviour
         //A list of walls which can be converted to doors
         List<Tile> walls = new List<Tile>();
 
-        bool flagForDoor = false;
-        bool isDoorPlaced = false;
-
-        int xStart = (int) transform.position.x;
-        int yStart = (int)transform.position.y;
-
-
-        for (int currentY = yStart; currentY < yStart + height; currentY++)
+        foreach (Transform child in transform)
         {
-            for (int currentX = xStart; currentX < width; currentX++)
+            Tile tile = child.GetComponent<Tile>();
+
+            if (child.name == "Wall")
             {
-                flagForDoor = false;
+                int currentX = tile.GridPosition.x - (int)transform.position.x;
+                int currentY = tile.GridPosition.y - (int)transform.position.y;
 
-                if (currentX == 0 || currentX == width - 1 || currentY == 0 || currentY == height - 1)
+                if (currentX == 0 && currentY == 0 ||
+                    currentY == 0 && currentX == width - 1 ||
+                    currentY == height - 1 && currentX == 0 ||
+                    currentX == width - 1 && currentY == height - 1)
                 {
-                    if (!(currentX == 0 && currentY == 0 ||
-                        currentY == 0 && currentX == width - 1 ||
-                        currentY == height - 1 && currentX == 0 ||
-                        currentX == width - 1 && currentY == height - 1))
-                    {
-                        flagForDoor = true;
-                    }
+                    continue;
                 }
-
-                //Adds non-corner wall tiles to a list
-                if (flagForDoor == true)
+                else
                 {
-                    walls.Add(LevelManager.Instance.Tiles[new Point(currentX, currentY)]);
+                    walls.Add(child.GetComponent<Tile>());
                 }
             }
         }
 
-        while (!isDoorPlaced)
-        {
-            int tempX = 0;
-            int tempY = 0;
 
-            foreach (Tile wall in walls)
-            {
-                tempX = wall.GridPosition.x;
-                tempY = wall.GridPosition.y;
-                if (Random.Range(0, 25) == 24)
-                {
-                    //Destroy the old tile
-                    Tile tile = LevelManager.Instance.Tiles[wall.GridPosition];
-                    Destroy(tile);
-                    LevelManager.Instance.Tiles.Remove(wall.GridPosition);
+        int rand = Random.Range(0, walls.Count);
+        Tile wall = walls[rand];
+        LevelManager.Instance.Tiles.Remove(wall.GridPosition);
 
-                    //Create the door
-                    tile = Instantiate(LevelManager.Instance.tilePrefabs[2], new Vector3(tempX, tempY, 0), Quaternion.identity, transform).GetComponent<Tile>();
-                    tile.name = "Door";
-                    tile.Setup(tempX, tempY);
-                    isDoorPlaced = true;
-                    break;
-                }
-            }
-        }
+        int tempX = wall.GridPosition.x;
+        int tempY = wall.GridPosition.y;
 
+        Destroy(wall.gameObject);
+
+        wall = Instantiate(LevelManager.Instance.tilePrefabs[2], new Vector3(tempX, tempY, 0), Quaternion.identity, transform).GetComponent<Tile>();
+        wall.name = "Door";
+        wall.Setup(tempX, tempY);
+        LevelManager.Instance.Tiles.Add(wall.GridPosition, wall);
     }
 
     private void MoveRoom(int roomWidth, int roomHeight, int levelWidth, int levelHeight)

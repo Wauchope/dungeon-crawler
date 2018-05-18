@@ -16,6 +16,8 @@ public class LevelManager : Singleton<LevelManager>
 
     public Dictionary<Point, Tile> Tiles = new Dictionary<Point, Tile>();
 
+    public Dictionary<int, string> tileTypes = new Dictionary<int, string>();
+
     [SerializeField]
     private Transform map;
 
@@ -50,8 +52,16 @@ public class LevelManager : Singleton<LevelManager>
 
     void Start ()
     {
+        SetupTileTypes();
         mazeGen = GetComponent<MazeGenerator>();
         NewLevel();
+    }
+
+    private void SetupTileTypes()
+    {
+        tileTypes.Add(0, "Wall");
+        tileTypes.Add(1, "Floor");
+        tileTypes.Add(2, "Door");
     }
 
     private void NewLevel()
@@ -113,6 +123,7 @@ public class LevelManager : Singleton<LevelManager>
                 }
 
                 GameObject newTile = Instantiate(tilePrefabs[tileType], new Vector3(currentX, currentY, 0), Quaternion.identity, room.transform);
+                newTile.name = tileTypes[tileType];
             }
         }
 
