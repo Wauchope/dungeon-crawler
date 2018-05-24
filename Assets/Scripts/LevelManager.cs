@@ -64,129 +64,159 @@ public class LevelManager : MonoBehaviour
             }
         }
 
-        int maxArea = width * height;
-
-        CreateRoom(map, xMax, yMax, true);
-        CreateHallway(map, xMax, yMax);
+        CreateRoom(map, true);
+        CreateHallway(map);
         for (int features = 0; features <= maxFeatures; features++)
         {
-            CreateFeature(map, xMax, yMax);
+            //CreateFeature(map);
         }
 
         return map;
     }
 
-    private void CreateFeature(int[,] map, int levelWidth, int levelHeight)
+    private void CreateFeature(int[,] map)
     {
-        int[] wallPos = FindWall(map, levelWidth, levelHeight);
+        int[] wallPos = FindWall(map);
 
         int rand = UnityEngine.Random.Range(0, 4);
 
         switch (rand)
         {
             case 0:
-                CreateRoom(map, levelWidth, levelHeight, false);
+                CreateRoom(map, false);
                 break;
             default:
-                CreateHallway(map, levelWidth, levelHeight);
+                CreateHallway(map);
                 break;
         }
 
     }
 
-    private int[,] CreateHallway(int[,] map, int levelWidth, int levelHeight)
+    private int[,] CreateHallway(int[,] map)
     {
-        int length = UnityEngine.Random.Range(0, 10);
+        int[,] mapO = map;
 
-        int[] wallpos = FindWall(map, levelWidth, levelHeight);
-        int x = wallpos[0];
-        int y = wallpos[1];
+        int levelWidth = map.GetUpperBound(0);
+        int levelHeight = map.GetUpperBound(1);
+
+        Debug.Log(levelWidth + ", " + levelHeight);
+
+        int length = UnityEngine.Random.Range(5, 10);
+
+        int[] wallPos = FindWall(map);
+        int x = wallPos[0];
+        int y = wallPos[1];
 
         int[] target = new int[] { 0, 0 };
 
         int rand = 0;
 
-        while (!TileInBounds(target[0], target[1], levelWidth, levelHeight))
+        while (!TileInBounds(map, target[0], target[1]))
         {
             rand = UnityEngine.Random.Range(0, 4);
             switch (rand)
             {
                 case 0:
-                    if (TileInBounds(x, y + length, levelWidth, levelHeight))
-                    {
-                        target = new int[] { x, y + length };
-                    }
+                    y += length;
                     break;
                 case 1:
-                    if (TileInBounds(x, y - length, levelWidth, levelHeight))
-                    {
-                        target = new int[] { x, y - length };
-                    }
+                    y -= length;
                     break;
                 case 2:
-                    if (TileInBounds(x + length, y, levelWidth, levelHeight))
-                    {
-                        target = new int[] { x + length, y };
-                    }
+                    x += length;
                     break;
                 case 3:
-                    if (TileInBounds(x - length, y, levelWidth, levelHeight))
-                    {
-                        target = new int[] { x - length, y };
-                    }
+                    x -= length;
                     break;
+            }
+
+            if (TileInBounds(map, x, y))
+            {
+                target = new int[] { x, y };
+            }
+            else
+            {
+                x = wallPos[0];
+                y = wallPos[1];
+                length--;
+
+                if (length < 5)
+                {
+                    return mapO;
+                }
             }
         }
 
-        switch (rand)
+        if (target[0] == wallPos[0])
         {
-            case 0:
-                if (TileInBounds(x, y + length, levelWidth, levelHeight))
-                {
-                    for (int offset = 0; offset <= length; offset++)
-                    {
-                        map[x, y + offset] = 1;
-                    }
-                }
-                break;
-            case 1:
-                if (TileInBounds(x, y - length, levelWidth, levelHeight))
-                {
-                    for (int offset = 0; offset <= length; offset++)
-                    {
-                        map[x, y - offset] = 1;
-                    }
-                }
-                break;
-            case 2:
-                if (TileInBounds(x + length, y, levelWidth, levelHeight))
-                {
-                    for (int offset = 0; offset <= length; offset++)
-                    {
-                        map[x + offset, y] = 1;
-                    }
-                }
-                break;
-            case 3:
-                if (TileInBounds(x - length, y, levelWidth, levelHeight))
-                {
-                    for (int offset = 0; offset <= length; offset++)
-                    {
-                        map[x - offset, y] = 1;
-                    }
-                }
-                break;
-        }
+            //Vertical hallway
+            int displacement = target[1] - wallPos[1];
 
+            if (displacement > 0)
+            {
+                //Build hallway in positive y direction
+                for (int yPos = wallPos[1]; yPos < target[1]; yPos++)
+                {
+                    if (!IntersectsFeature(map, wallPos[0], yPos))
+                    {
+                        map[wallPos[0], yPos] = 1;
+                    }
+                    else return mapO;
+                }
+            }
+            else
+            {
+                for (int yPos = wallPos[1]; yPos > target[1]; yPos++)
+                {
+                    if (!IntersectsFeature(map, wallPos[0], yPos))
+                    {
+                        map[wallPos[0], yPos] = 1;
+                    }
+                    else return mapO;
+                }
+            }
+        }
+        else
+        {
+            //Horizontal hallway
+            int displacement = target[0] - wallPos[0];
+
+            if (displacement > 0)
+            {
+                //Build hallway in positive x direction
+                for (int xPos = wallPos[0]; xPos < target[0]; xPos++)
+                {
+                    if (!IntersectsFeature(map, xPos, wallPos[1]))
+                    {
+                        map[xPos, wallPos[1]] = 1;
+                    }
+                    else return mapO;
+                }
+            }
+            else
+            {
+                for (int xPos = wallPos[0]; xPos > target[0]; xPos++)
+                {
+                    if (!IntersectsFeature(map, xPos, wallPos[1]))
+                    {
+                        map[xPos, wallPos[1]] = 1;
+                    }
+                    else return mapO;
+                }
+            }
+        }
         return map;
     }
 
-    private int[] FindWall(int[,] map, int levelWidth, int levelHeight)
+    private int[] FindWall(int[,] map)
     {
         int x = 0;
         int y = 0;
 
-        while (!IsWall(map, x, y, levelWidth, levelHeight))
+        int levelWidth = map.GetUpperBound(0);
+        int levelHeight = map.GetUpperBound(1);
+
+        while (!IsWall(map, x, y))
         {
             x = UnityEngine.Random.Range(0, levelWidth);
             y = UnityEngine.Random.Range(0, levelHeight);
@@ -195,10 +225,13 @@ public class LevelManager : MonoBehaviour
         return new int[] { x, y };
     }
 
-    private bool IsWall(int[,] map, int x, int y, int levelWidth, int levelHeight)
+    private bool IsWall(int[,] map, int x, int y)
     {
+        int levelWidth = map.GetUpperBound(0);
+        int levelHeight = map.GetUpperBound(1);
+
         //Check if the position is on the edge of the map
-        if (TileInBounds(x, y, levelWidth, levelHeight) && map[x, y] != 1)
+        if (TileInBounds(map, x, y) && map[x, y] != 1)
         {
             //Randomizes the direction it will check (for even more randomness!)
             int rand = UnityEngine.Random.Range(0, 4);
@@ -234,8 +267,13 @@ public class LevelManager : MonoBehaviour
         return false;
     }
 
-    private int[,] CreateRoom(int[,] map, int levelWidth, int levelHeight, bool firstRoom)
+    private int[,] CreateRoom(int[,] map, bool firstRoom)
     {
+        int[,] mapO = map;
+
+        int levelWidth = map.GetUpperBound(0);
+        int levelHeight = map.GetUpperBound(1);
+
         int roomWidth = 0;
         int roomHeight = 0;
 
@@ -251,53 +289,61 @@ public class LevelManager : MonoBehaviour
         }
         else
         {
-            int[] wallPos = FindWall(map, levelWidth, levelHeight);
+            int[] wallPos = FindWall(map);
             xPos = wallPos[0];
             yPos = wallPos[1];
         }
-        bool proceed = false;
 
-        while (!proceed)
+        while (area == 0 || area > maxArea)
         {
-            while (area == 0 || area > maxArea)
-            {
-                roomWidth = UnityEngine.Random.Range(levelWidth / 16, levelWidth / 8);
-                roomHeight = UnityEngine.Random.Range(levelHeight / 16, levelHeight / 8);
+            roomWidth = UnityEngine.Random.Range(levelWidth / 16, levelWidth / 8);
+            roomHeight = UnityEngine.Random.Range(levelHeight / 16, levelHeight / 8);
 
-                area = roomWidth * roomHeight;
-            }
+            area = roomWidth * roomHeight;
+        }
 
-            if (TileInBounds(xPos + roomWidth, yPos + roomHeight, levelWidth, levelHeight))
+        if (TileInBounds(map, xPos + roomWidth, yPos + roomHeight))
+        {
+            //Create the room in the map array
+            for (int x = xPos; x <= xPos + roomWidth; x++)
             {
-                //Create the room in the map array
-                for (int x = xPos; x <= xPos + roomWidth; x++)
+                for (int y = yPos; y <= yPos + roomHeight; y++)
                 {
-                    for (int y = yPos; y <= yPos + roomHeight; y++)
+                    if (!IntersectsFeature(map, x, y))
                     {
                         map[x, y] = 1;
                     }
+                    else return mapO;
                 }
-
-                proceed = true;
             }
+
         }
+        else return mapO;
 
         return map;
     }
 
-    private bool TileInBounds(int xPos, int yPos, int levelWidth, int levelHeight)
+    private bool TileInBounds(int[,] map, int xPos, int yPos)
     {
-        if(xPos < levelWidth && xPos > 0 && yPos < levelHeight && yPos > 0)
+        int levelWidth = map.GetUpperBound(0);
+        int levelHeight = map.GetUpperBound(1);
+
+        if (xPos < levelWidth && xPos > 0 && yPos < levelHeight && yPos > 0)
         {
             return true;
         }
-        else
-        {
-            return false;
-        }
+        else return false;
     }
 
-    // Update is called once per frame
+    private bool IntersectsFeature (int[,] map, int xPos, int yPos)
+    {
+        if (map[xPos, yPos] == 1)
+        {
+            return true;
+        }
+        else return false;
+    }
+
     void Update () {
 		
 	}
